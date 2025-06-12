@@ -1,0 +1,15 @@
+{
+  "name": "404found",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Tanmayi G",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app/js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
