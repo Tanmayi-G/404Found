@@ -1,11 +1,16 @@
 const express = require("express");
+const { connectDB } = require("./config/database");
+require("dotenv").config();
 
 const app = express();
 
-app.use("/", (req, res) => {
-  res.send("Hello from the server!");
-});
-
-app.listen(3000, () => {
-  console.log("Server is listening on port 3000");
-});
+connectDB()
+  .then(() => {
+    console.log("Database connection established");
+    app.listen(process.env.PORT, () => {
+      console.log("Server is listening on port " + process.env.PORT);
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection failed");
+  });
