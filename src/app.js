@@ -2,6 +2,11 @@ const express = require("express");
 const { connectDB } = require("./config/database");
 const User = require("./models/user");
 require("dotenv").config();
+const {
+  validateSignUpData,
+  validateUserInfoUpdate,
+} = require("./utils/validations");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
@@ -9,19 +14,26 @@ app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   try {
-    const data = req.body;
+    //Data validation
+    validateSignUpData(req);
 
-    const isSafe = (obj) =>
-      Object.keys(obj).every((key) => !key.includes("$") && !key.includes("."));
-    if (!isSafe(data)) {
-      return res.status(400).send("Invalid input detected");
-    }
+    const { firstName, lastName, emailId, password } = req.body;
 
-    const user = new User(data);
+    //Password encryption
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    //Store user
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
     await user.save();
+
     res.send("User added successfully");
   } catch (err) {
-    res.status(400).send("Error adding the user" + err.message);
+    res.status(400).send("Error occurred: " + err.message);
   }
 });
 
@@ -29,7 +41,7 @@ app.get("/user", async (req, res) => {
   try {
     const userEmail = req.body.emailId;
     const user = await User.find({ emailId: userEmail });
-    if (!user) {
+    if (!user.length) {
       res.status(404).send("User not found");
     } else {
       res.send(user);
@@ -42,7 +54,7 @@ app.get("/user", async (req, res) => {
 app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({});
-    if (!users) {
+    if (!users.length) {
       res.status(404).send("No users found");
     } else {
       res.send(users);
@@ -64,35 +76,17 @@ app.delete("/user", async (req, res) => {
 
 app.patch("/user/:userId", async (req, res) => {
   try {
+    //Data validation
+    validateUserInfoUpdate(req);
+
     const userId = req.params?.userId;
     const data = req.body;
 
-    const isSafe = (obj) =>
-      Object.keys(obj).every((key) => !key.includes("$") && !key.includes("."));
-    if (!isSafe(data)) {
-      return res.status(400).send("Invalid input detected");
-    }
-
-    const ALLOWED_UPDATES = [
-      "password",
-      "age",
-      "gender",
-      "photoUrl",
-      "about",
-      "skills",
-    ];
-
-    const isUpdateAllowed = Object.keys(data).every((key) =>
-      ALLOWED_UPDATES.includes(key)
-    );
-    if (!isUpdateAllowed) {
-      throw new Error("Update not allowed");
-    }
+    //Update user
     const user = await User.findByIdAndUpdate(userId, data, {
       returnDocument: "after",
       runValidators: true,
     });
-    console.log(user);
     res.send("User updated successfully");
   } catch (err) {
     res.status(400).send("User update failed: " + err.message);
