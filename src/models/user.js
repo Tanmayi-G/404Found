@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
 
 const userSchema = new mongoose.Schema(
   {
@@ -34,9 +37,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       validate(value) {
         if (!validator.isStrongPassword(value)) {
-          throw new Error(
-            "Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol"
-          );
+          throw new Error("Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol");
         }
       },
     },
@@ -65,8 +66,7 @@ const userSchema = new mongoose.Schema(
     about: {
       type: String,
       maxLength: [200, "About section must be under 200 characters"],
-      default:
-        "Hi there! I'm new here. Let's connect and build something great!",
+      default: "Hi there! I'm new here. Let's connect and build something great!",
       trim: true,
     },
     skills: {
@@ -81,6 +81,19 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.methods.getJWT = function () {
+  const user = this;
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" }); //expires after 1 day
+  return token;
+};
+
+userSchema.methods.validatePassword = async function (inputPassword) {
+  const user = this;
+  const passwordHash = user.password;
+  const isPasswordValid = await bcrypt.compare(inputPassword, passwordHash);
+  return isPasswordValid;
+};
 
 const User = mongoose.model("User", userSchema);
 
