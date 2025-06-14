@@ -1,7 +1,6 @@
 const validator = require("validator");
 
-const isSafe = (obj) =>
-  Object.keys(obj).every((key) => !key.includes("$") && !key.includes("."));
+const isSafe = (obj) => Object.keys(obj).every((key) => !key.includes("$") && !key.includes("."));
 
 const validateSignUpData = (req) => {
   if (!isSafe(req.body)) {
@@ -15,37 +14,25 @@ const validateSignUpData = (req) => {
   } else if (!validator.isEmail(emailId)) {
     throw new Error("Invalid email address");
   } else if (!validator.isStrongPassword(password)) {
-    throw new Error(
-      "Your password is weak! Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol."
-    );
+    throw new Error("Your password is weak! Password must be at least 8 characters long and include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol.");
   }
 };
 
-const validateUserInfoUpdate = (req) => {
+const validateEditProfileData = (req) => {
   if (!isSafe(req.body)) {
     throw new Error("Invalid input detected");
   }
 
-  const allowedUpdateFields = [
-    "firstName",
-    "lastName",
-    "photoUrl",
-    "gender",
-    "age",
-    "about",
-    "skills",
-  ];
+  const allowedEditFields = ["firstName", "lastName", "photoUrl", "gender", "age", "about", "skills"];
 
-  const isUpdateAllowed = Object.keys(req.body).every((field) =>
-    allowedUpdateFields.includes(field)
-  );
+  const isEditAllowed = Object.keys(req.body).every((field) => allowedEditFields.includes(field));
 
-  if (!isUpdateAllowed) {
-    throw new Error("Update not allowed");
+  if (!isEditAllowed) {
+    throw new Error("Invalid edit request");
   }
 };
 
 module.exports = {
   validateSignUpData,
-  validateUserInfoUpdate,
+  validateEditProfileData,
 };
