@@ -5,7 +5,7 @@ const User = require("../models/user");
 
 const userRouter = express.Router();
 
-const USER_SAFE_DATA = ["firstName", "lastName", "photoUrl", "about", "skills"];
+const USER_SAFE_DATA = ["firstName", "lastName", "photoUrl", "about", "skills", "age", "gender"];
 
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
@@ -72,7 +72,6 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       hideUsersFromFeed.add(req.fromUserId.toString());
       hideUsersFromFeed.add(req.toUserId.toString());
     });
-    console.log(hideUsersFromFeed);
 
     const usersInFeed = await User.find({
       $and: [{ _id: { $nin: Array.from(hideUsersFromFeed) } }, { _id: { $ne: loggedInUser._id } }],

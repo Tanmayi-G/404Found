@@ -48,14 +48,13 @@ const userSchema = new mongoose.Schema(
     gender: {
       type: String,
       enum: {
-        values: ["male", "female", "others"],
+        values: ["Male", "Female", "Other", ""],
         message: `Invalid gender: {VALUE}`,
       },
     },
     photoUrl: {
       type: String,
-      default:
-        "https://www.google.com/url?sa=i&url=https%3A%2F%2Fpixabay.com%2Fimages%2Fsearch%2Fuser%2520icon%2F&psig=AOvVaw2xNS5bogHHtjIdBS0E8ZcC&ust=1749875385624000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqGAoTCKCnvvnH7Y0DFQAAAAAdAAAAABCBAQ",
+      default: "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png",
       validate(value) {
         if (!validator.isURL(value)) {
           throw new Error("Invalid photo URL: " + value);
