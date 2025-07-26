@@ -2,6 +2,7 @@ const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
+const sendEmail = require("../utils/sendEmail");
 
 const requestRouter = express.Router();
 
@@ -36,6 +37,8 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
     let message;
     if (status === "interested") {
       message = `${req.user.firstName} wants to connect with ${toUser.firstName}`;
+      const emailRes = await sendEmail.run(`New friend request from ${req.user.firstName}!`, `Hi ${toUser.firstName}! You have a new friend request from ${req.user.firstName} ${req.user.lastName}!`);
+      console.log(emailRes);
     } else {
       message = `${req.user.firstName} has chosen to ignore ${toUser.firstName}`;
     }
