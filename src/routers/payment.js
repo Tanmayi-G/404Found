@@ -59,25 +59,36 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     const paymentDetails = req.body.payload.payment.entity;
 
     const payment = await Payment.findOne({ orderId: paymentDetails.order_id });
+    if (!payment) {
+      return res.status(404).json({ msg: "Payment record not found" });
+    }
     payment.status = paymentDetails.status;
     await payment.save();
 
     //mark the user acc as premium
-    const user = await User.findOne({ _id: payment.userId });
-    user.isPremium = true;
-    user.membershipType = payment.notes.membershipType;
-    await user.save();
-
-    // if (req.body.event == "payment.captured") {
-    // }
-    // if (req.body.event == "payment.failed") {
-    // }
+    if (req.body.event == "payment.captured") {
+      const user = await User.findOne({ _id: payment.userId });
+      user.isPremium = true;
+      user.membershipType = payment.notes.membershipType;
+      await user.save();
+    }
+    if (req.body.event == "payment.failed") {
+      console.warn(`Payment failed for user: ${payment.userId}`);
+    }
 
     //return success response to razorpay
     return res.status(200).json({ msg: "Webhook received successfully" });
   } catch (err) {
     return res.status(500).json({ msg: err.message });
   }
+});
+
+paymentRouter.get("/premium/verifyPayment", userAuth, async (req, res) => {
+  const user = req.user.toJSON();
+  if (user.isPremium) {
+    return res.json({ isPremium: true, membershipType: user.membershipType });
+  }
+  return res.json({ isPremium: false, membershipType: user.membershipType });
 });
 
 module.exports = paymentRouter;
