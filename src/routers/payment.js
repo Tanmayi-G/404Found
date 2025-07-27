@@ -38,8 +38,10 @@ paymentRouter.post("/payment/createOrder", userAuth, async (req, res) => {
     const savedPayment = await payment.save();
 
     //send back to FE
-    res.json({ ...savedPayment.toJSON() });
-  } catch (err) {}
+    res.json({ ...savedPayment.toJSON(), keyId: process.env.RAZORPAY_KEY_ID });
+  } catch (err) {
+    res.send("Error occurred: " + err);
+  }
 });
 
 module.exports = paymentRouter;
